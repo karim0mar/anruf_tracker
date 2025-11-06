@@ -172,7 +172,8 @@
       }
 
       @keyframes pulse {
-        0%, 100% {
+        0%,
+        100% {
           transform: scale(1);
         }
         50% {
@@ -212,17 +213,29 @@
 
       .metric-box.success {
         border-left-color: #38ef7d;
-        background: linear-gradient(90deg, rgba(56, 239, 125, 0.1) 0%, #f8f9fa 100%);
+        background: linear-gradient(
+          90deg,
+          rgba(56, 239, 125, 0.1) 0%,
+          #f8f9fa 100%
+        );
       }
 
       .metric-box.warning {
         border-left-color: #f2c94c;
-        background: linear-gradient(90deg, rgba(242, 201, 76, 0.1) 0%, #f8f9fa 100%);
+        background: linear-gradient(
+          90deg,
+          rgba(242, 201, 76, 0.1) 0%,
+          #f8f9fa 100%
+        );
       }
 
       .metric-box.danger {
         border-left-color: #eb3349;
-        background: linear-gradient(90deg, rgba(235, 51, 73, 0.1) 0%, #f8f9fa 100%);
+        background: linear-gradient(
+          90deg,
+          rgba(235, 51, 73, 0.1) 0%,
+          #f8f9fa 100%
+        );
       }
 
       .metric-box h3 {
@@ -469,7 +482,7 @@
 
       <div class="results" id="results">
         <!-- Ja/Nein Results -->
-        <div id="ja-nein-results" style="display: none;">
+        <div id="ja-nein-results" style="display: none">
           <div class="result-card">
             <div class="result-value" id="percentage-9">0%</div>
             <p id="missing-9">Noch 0 „Ja"-Anrufe benötigt</p>
@@ -488,7 +501,7 @@
         </div>
 
         <!-- Verständlichkeit Results -->
-        <div id="verst-results" style="display: none;">
+        <div id="verst-results" style="display: none">
           <div class="result-card">
             <div class="result-value" id="percentage-12">0%</div>
             <p id="missing-12">Noch 0 „Verständlichkeit"-Anrufe benötigt</p>
@@ -578,7 +591,7 @@
 
       function displayResults() {
         results.classList.add('show');
-        
+
         // Hide both result sections first
         document.getElementById('ja-nein-results').style.display = 'none';
         document.getElementById('verst-results').style.display = 'none';
@@ -586,22 +599,30 @@
         // Show Ja/Nein results
         if (jaCount + neinCount != 0) {
           document.getElementById('ja-nein-results').style.display = 'block';
-          
-          const target9 = neinCount * 9;
-          const p9 = target9 > 0 ? Math.min(100, ((jaCount / target9) * 100)).toFixed(1) : 100;
-          const miss9 = target9 - jaCount;
-          const extra9 = jaCount - target9;
+
+          const total = jaCount + neinCount;
+          const p9 = ((jaCount / total) * 100).toFixed(1);
+
+          // Calculate how many Ja needed to reach 90%
+          const neededForTarget = Math.ceil(0.9 * total - jaCount);
+          const miss9 = Math.max(0, neededForTarget);
 
           // Determine status class
-          const resultCard9 = document.querySelector('#ja-nein-results .result-card');
-          const targetBox9 = document.querySelector('#ja-nein-results .metric-box:nth-child(1)');
-          const remainingBox9 = document.querySelector('#ja-nein-results .metric-box:nth-child(2)');
-          
+          const resultCard9 = document.querySelector(
+            '#ja-nein-results .result-card'
+          );
+          const targetBox9 = document.querySelector(
+            '#ja-nein-results .metric-box:nth-child(1)'
+          );
+          const remainingBox9 = document.querySelector(
+            '#ja-nein-results .metric-box:nth-child(2)'
+          );
+
           resultCard9.classList.remove('success', 'warning', 'danger');
           targetBox9.classList.remove('success', 'warning', 'danger');
           remainingBox9.classList.remove('success', 'warning', 'danger');
-          
-          if (p9 >= 100) {
+
+          if (p9 >= 90) {
             resultCard9.classList.add('success');
             targetBox9.classList.add('success');
             remainingBox9.classList.add('success');
@@ -615,45 +636,57 @@
             remainingBox9.classList.add('danger');
           }
 
-          document.getElementById('percentage-9').textContent = p9 + '%';
-          
+          document.getElementById('percentage-9').textContent =
+            Math.min(100, p9) + '%';
+
           if (miss9 > 0) {
-            document.getElementById('missing-9').textContent = 
-              `Noch ${miss9} „Ja"-Anrufe benötigt`;
+            document.getElementById(
+              'missing-9'
+            ).textContent = `Noch ${miss9} „Ja"-Anrufe benötigt für 90%`;
             document.getElementById('remaining-9').textContent = miss9;
-          } else if (extra9 > 0) {
-            const coveredNein = Math.floor(extra9 / 9);
-            const remainder = extra9 % 9;
-            document.getElementById('missing-9').textContent = 
-              `✨ Ziel erreicht! +${extra9} Extra (${coveredNein} "Nein" gedeckt${remainder > 0 ? ` + ${remainder} Extra` : ''})`;
-            document.getElementById('remaining-9').textContent = '0 ✨';
           } else {
-            document.getElementById('missing-9').textContent = '✨ Ziel erreicht!';
+            const excess = jaCount - Math.ceil(0.9 * total);
+            if (excess > 0) {
+              document.getElementById(
+                'missing-9'
+              ).textContent = `✨ Ziel erreicht! +${excess} Extra Ja-Anrufe`;
+            } else {
+              document.getElementById('missing-9').textContent =
+                '✨ Ziel erreicht!';
+            }
             document.getElementById('remaining-9').textContent = '0 ✨';
           }
 
-          document.getElementById('target-9').textContent = target9;
+          document.getElementById('target-9').textContent = '90%';
         }
 
         // Show Verständlichkeit results
         if (verstRichtigCount + verstFalschCount != 0) {
           document.getElementById('verst-results').style.display = 'block';
-          
-          const target12 = verstFalschCount * 12;
-          const p12 = target12 > 0 ? Math.min(100, ((verstRichtigCount / target12) * 100)).toFixed(1) : 100;
-          const miss12 = target12 - verstRichtigCount;
-          const extra12 = verstRichtigCount - target12;
+
+          const total = verstRichtigCount + verstFalschCount;
+          const p12 = ((verstRichtigCount / total) * 100).toFixed(1);
+
+          // Calculate how many Richtig needed to reach 92.3% (12:1 ratio = 92.3%)
+          const neededForTarget = Math.ceil(0.923 * total - verstRichtigCount);
+          const miss12 = Math.max(0, neededForTarget);
 
           // Determine status class
-          const resultCard12 = document.querySelector('#verst-results .result-card');
-          const targetBox12 = document.querySelector('#verst-results .metric-box:nth-child(1)');
-          const remainingBox12 = document.querySelector('#verst-results .metric-box:nth-child(2)');
-          
+          const resultCard12 = document.querySelector(
+            '#verst-results .result-card'
+          );
+          const targetBox12 = document.querySelector(
+            '#verst-results .metric-box:nth-child(1)'
+          );
+          const remainingBox12 = document.querySelector(
+            '#verst-results .metric-box:nth-child(2)'
+          );
+
           resultCard12.classList.remove('success', 'warning', 'danger');
           targetBox12.classList.remove('success', 'warning', 'danger');
           remainingBox12.classList.remove('success', 'warning', 'danger');
-          
-          if (p12 >= 100) {
+
+          if (p12 >= 92.3) {
             resultCard12.classList.add('success');
             targetBox12.classList.add('success');
             remainingBox12.classList.add('success');
@@ -667,24 +700,28 @@
             remainingBox12.classList.add('danger');
           }
 
-          document.getElementById('percentage-12').textContent = p12 + '%';
-          
+          document.getElementById('percentage-12').textContent =
+            Math.min(100, p12) + '%';
+
           if (miss12 > 0) {
-            document.getElementById('missing-12').textContent = 
-              `Noch ${miss12} „Verständlichkeit"-Anrufe benötigt`;
+            document.getElementById(
+              'missing-12'
+            ).textContent = `Noch ${miss12} „Richtig"-Anrufe benötigt für 92.3%`;
             document.getElementById('remaining-12').textContent = miss12;
-          } else if (extra12 > 0) {
-            const coveredFalsch = Math.floor(extra12 / 12);
-            const remainder = extra12 % 12;
-            document.getElementById('missing-12').textContent = 
-              `✨ Ziel erreicht! +${extra12} Extra (${coveredFalsch} "Falsch" gedeckt${remainder > 0 ? ` + ${remainder} Extra` : ''})`;
-            document.getElementById('remaining-12').textContent = '0 ✨';
           } else {
-            document.getElementById('missing-12').textContent = '✨ Ziel erreicht!';
+            const excess = verstRichtigCount - Math.ceil(0.923 * total);
+            if (excess > 0) {
+              document.getElementById(
+                'missing-12'
+              ).textContent = `✨ Ziel erreicht! +${excess} Extra Richtig-Anrufe`;
+            } else {
+              document.getElementById('missing-12').textContent =
+                '✨ Ziel erreicht!';
+            }
             document.getElementById('remaining-12').textContent = '0 ✨';
           }
 
-          document.getElementById('target-12').textContent = target12;
+          document.getElementById('target-12').textContent = '92.3%';
         }
       }
     </script>
