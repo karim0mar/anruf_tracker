@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Anruf-Tracker 2025</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📞</text></svg>"
+    />
     <style>
       * {
         margin: 0;
@@ -596,18 +600,16 @@
         document.getElementById('ja-nein-results').style.display = 'none';
         document.getElementById('verst-results').style.display = 'none';
 
-        // Show Ja/Nein results
+        // Ja/Nein results: لكل 1 Nein، يلزم 9 Ja
         if (jaCount + neinCount != 0) {
           document.getElementById('ja-nein-results').style.display = 'block';
 
+          // الحساب الجديد
+          const requiredJa = neinCount * 9;
+          const neededForTarget = Math.max(0, requiredJa - jaCount);
           const total = jaCount + neinCount;
-          const p9 = ((jaCount / total) * 100).toFixed(1);
+          const p9 = total === 0 ? 0 : ((jaCount / total) * 100).toFixed(1);
 
-          // Calculate how many Ja needed to reach 90%
-          const neededForTarget = Math.ceil(0.9 * total - jaCount);
-          const miss9 = Math.max(0, neededForTarget);
-
-          // Determine status class
           const resultCard9 = document.querySelector(
             '#ja-nein-results .result-card'
           );
@@ -622,11 +624,11 @@
           targetBox9.classList.remove('success', 'warning', 'danger');
           remainingBox9.classList.remove('success', 'warning', 'danger');
 
-          if (p9 >= 90) {
+          if (jaCount >= requiredJa) {
             resultCard9.classList.add('success');
             targetBox9.classList.add('success');
             remainingBox9.classList.add('success');
-          } else if (p9 >= 70) {
+          } else if (jaCount >= requiredJa / 2) {
             resultCard9.classList.add('warning');
             targetBox9.classList.add('warning');
             remainingBox9.classList.add('warning');
@@ -639,13 +641,14 @@
           document.getElementById('percentage-9').textContent =
             Math.min(100, p9) + '%';
 
-          if (miss9 > 0) {
+          if (neededForTarget > 0) {
             document.getElementById(
               'missing-9'
-            ).textContent = `Noch ${miss9} „Ja"-Anrufe benötigt für 90%`;
-            document.getElementById('remaining-9').textContent = miss9;
+            ).textContent = `Noch ${neededForTarget} „Ja"-Anrufe benötigt`;
+            document.getElementById('remaining-9').textContent =
+              neededForTarget;
           } else {
-            const excess = jaCount - Math.ceil(0.9 * total);
+            const excess = jaCount - requiredJa;
             if (excess > 0) {
               document.getElementById(
                 'missing-9'
@@ -657,21 +660,22 @@
             document.getElementById('remaining-9').textContent = '0 ✨';
           }
 
-          document.getElementById('target-9').textContent = '90%';
+          document.getElementById('target-9').textContent = requiredJa;
         }
 
-        // Show Verständlichkeit results
+        // Verständlichkeit results: لكل 1 Nicht verstanden يلزم 12 Richtig
         if (verstRichtigCount + verstFalschCount != 0) {
           document.getElementById('verst-results').style.display = 'block';
 
+          const requiredRichtig = verstFalschCount * 12;
+          const neededForTarget = Math.max(
+            0,
+            requiredRichtig - verstRichtigCount
+          );
           const total = verstRichtigCount + verstFalschCount;
-          const p12 = ((verstRichtigCount / total) * 100).toFixed(1);
+          const p12 =
+            total === 0 ? 0 : ((verstRichtigCount / total) * 100).toFixed(1);
 
-          // Calculate how many Richtig needed to reach 92.3% (12:1 ratio = 92.3%)
-          const neededForTarget = Math.ceil(0.923 * total - verstRichtigCount);
-          const miss12 = Math.max(0, neededForTarget);
-
-          // Determine status class
           const resultCard12 = document.querySelector(
             '#verst-results .result-card'
           );
@@ -686,11 +690,11 @@
           targetBox12.classList.remove('success', 'warning', 'danger');
           remainingBox12.classList.remove('success', 'warning', 'danger');
 
-          if (p12 >= 92.3) {
+          if (verstRichtigCount >= requiredRichtig) {
             resultCard12.classList.add('success');
             targetBox12.classList.add('success');
             remainingBox12.classList.add('success');
-          } else if (p12 >= 70) {
+          } else if (verstRichtigCount >= requiredRichtig / 2) {
             resultCard12.classList.add('warning');
             targetBox12.classList.add('warning');
             remainingBox12.classList.add('warning');
@@ -703,13 +707,14 @@
           document.getElementById('percentage-12').textContent =
             Math.min(100, p12) + '%';
 
-          if (miss12 > 0) {
+          if (neededForTarget > 0) {
             document.getElementById(
               'missing-12'
-            ).textContent = `Noch ${miss12} „Richtig"-Anrufe benötigt für 92.3%`;
-            document.getElementById('remaining-12').textContent = miss12;
+            ).textContent = `Noch ${neededForTarget} „Richtig"-Anrufe benötigt`;
+            document.getElementById('remaining-12').textContent =
+              neededForTarget;
           } else {
-            const excess = verstRichtigCount - Math.ceil(0.923 * total);
+            const excess = verstRichtigCount - requiredRichtig;
             if (excess > 0) {
               document.getElementById(
                 'missing-12'
@@ -721,7 +726,7 @@
             document.getElementById('remaining-12').textContent = '0 ✨';
           }
 
-          document.getElementById('target-12').textContent = '92.3%';
+          document.getElementById('target-12').textContent = requiredRichtig;
         }
       }
     </script>
