@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anruf-Tracker 2025</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        animation: slideIn 0.6s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      h1 {
+        color: #667eea;
+        font-size: 1.8em;
+        margin-bottom: 8px;
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 0.9em;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 600;
+        font-size: 1em;
+      }
+
+      input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 1em;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .dynamic-inputs {
+        display: none;
+        margin-top: 15px;
+      }
+
+      .dynamic-inputs.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .calculate-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .calculate-btn:active {
+        transform: scale(0.98);
+      }
+
+      .calculate-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .results {
+        margin-top: 25px;
+        display: none;
+      }
+
+      .show {
+        display: block;
+      }
+
+      .result-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 15px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        transition: all 0.4s ease;
+      }
+
+      .result-card.success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        box-shadow: 0 8px 25px rgba(56, 239, 125, 0.4);
+        animation: pulse 2s infinite;
+      }
+
+      .result-card.warning {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        box-shadow: 0 8px 25px rgba(242, 201, 76, 0.4);
+      }
+
+      .result-card.danger {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        box-shadow: 0 8px 25px rgba(235, 51, 73, 0.4);
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+      }
+
+      .result-value {
+        font-size: 2.2em;
+        font-weight: 700;
+        margin-bottom: 5px;
+        transition: all 0.3s ease;
+      }
+
+      .result-card.success .result-value {
+        text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+      }
+
+      .result-card p {
+        font-size: 0.95em;
+        line-height: 1.4;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .metric-box {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 12px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+      }
+
+      .metric-box.success {
+        border-left-color: #38ef7d;
+        background: linear-gradient(90deg, rgba(56, 239, 125, 0.1) 0%, #f8f9fa 100%);
+      }
+
+      .metric-box.warning {
+        border-left-color: #f2c94c;
+        background: linear-gradient(90deg, rgba(242, 201, 76, 0.1) 0%, #f8f9fa 100%);
+      }
+
+      .metric-box.danger {
+        border-left-color: #eb3349;
+        background: linear-gradient(90deg, rgba(235, 51, 73, 0.1) 0%, #f8f9fa 100%);
+      }
+
+      .metric-box h3 {
+        font-size: 0.75em;
+        color: #666;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-box .value {
+        font-size: 1.6em;
+        font-weight: 700;
+        color: #333;
+        transition: all 0.3s ease;
+        word-break: break-word;
+      }
+
+      .metric-box.success .value {
+        color: #11998e;
+      }
+
+      .metric-box.warning .value {
+        color: #f2994a;
+      }
+
+      .metric-box.danger .value {
+        color: #eb3349;
+      }
+
+      /* Radio Buttons */
+      .radio-group {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+
+      .radio-option {
+        position: relative;
+        padding-left: 30px;
+        cursor: pointer;
+        font-size: 1em;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .radio-option input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .custom-radio {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        height: 20px;
+        width: 20px;
+        border: 3px solid #667eea;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .radio-option input:checked ~ .custom-radio {
+        background: radial-gradient(circle at center, #667eea 0%, #764ba2 70%);
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+        transform: scale(1.05);
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid rgba(102, 126, 234, 0.2);
+      }
+
+      .footer p:first-child {
+        font-size: 0.85em;
+        color: #999;
+        margin-bottom: 5px;
+      }
+
+      .footer p:last-child {
+        font-size: 1.2em;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 1px;
+      }
+
+      /* Mobile Optimizations */
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          padding: 20px;
+          border-radius: 16px;
+        }
+
+        h1 {
+          font-size: 1.5em;
+        }
+
+        .subtitle {
+          font-size: 0.85em;
+        }
+
+        .radio-group {
+          gap: 15px;
+        }
+
+        .radio-option {
+          font-size: 0.9em;
+          padding-left: 28px;
+        }
+
+        .custom-radio {
+          height: 18px;
+          width: 18px;
+        }
+
+        input {
+          padding: 12px;
+          font-size: 0.95em;
+        }
+
+        .calculate-btn {
+          padding: 14px;
+          font-size: 1em;
+        }
+
+        .result-value {
+          font-size: 1.8em;
+        }
+
+        .result-card p {
+          font-size: 0.9em;
+        }
+
+        .metric-box {
+          padding: 14px;
+        }
+
+        .metric-box h3 {
+          font-size: 0.7em;
+        }
+
+        .metric-box .value {
+          font-size: 1.4em;
+        }
+
+        .footer p:last-child {
+          font-size: 1.1em;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .container {
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.3em;
+        }
+
+        .input-row {
+          gap: 10px;
+        }
+
+        .metric-grid {
+          gap: 10px;
+        }
+
+        .result-value {
+          font-size: 1.6em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📞 Anruf-Tracker</h1>
+      <p class="subtitle">Kundendienst Analyse 2025</p>
+
+      <div class="input-group">
+        <label>Anruf-Typ wählen</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="call-type"
+              id="radio-ja"
+              checked
+              value="ja-nein"
+            />
+            <span class="custom-radio"></span> Ja/Nein
+          </label>
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="call-type"
+              id="radio-verst"
+              value="verstaendlichkeit"
+            />
+            <span class="custom-radio"></span> Verständlichkeit
+          </label>
+        </div>
+      </div>
+
+      <div id="ja-nein-inputs" class="dynamic-inputs">
+        <div class="input-row">
+          <div>
+            <label>Ja</label>
+            <input type="number" id="ja-count" placeholder="0" min="0" />
+          </div>
+          <div>
+            <label>Nein</label>
+            <input type="number" id="nein-count" placeholder="0" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <div id="verst-inputs" class="dynamic-inputs">
+        <div class="input-row">
+          <div>
+            <label>Richtig verstanden</label>
+            <input type="number" id="verst-richtig" placeholder="0" min="0" />
+          </div>
+          <div>
+            <label>Nicht verstanden</label>
+            <input type="number" id="verst-falsch" placeholder="0" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <button class="calculate-btn" id="calculate-btn">Berechnen</button>
+
+      <div class="results" id="results">
+        <!-- Ja/Nein Results -->
+        <div id="ja-nein-results" style="display: none;">
+          <div class="result-card">
+            <div class="result-value" id="percentage-9">0%</div>
+            <p id="missing-9">Noch 0 „Ja"-Anrufe benötigt</p>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric-box">
+              <h3>Benötigtes Ziel</h3>
+              <div class="value" id="target-9">0</div>
+            </div>
+            <div class="metric-box">
+              <h3>Noch benötigt</h3>
+              <div class="value" id="remaining-9">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verständlichkeit Results -->
+        <div id="verst-results" style="display: none;">
+          <div class="result-card">
+            <div class="result-value" id="percentage-12">0%</div>
+            <p id="missing-12">Noch 0 „Verständlichkeit"-Anrufe benötigt</p>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric-box">
+              <h3>Benötigtes Ziel</h3>
+              <div class="value" id="target-12">0</div>
+            </div>
+            <div class="metric-box">
+              <h3>Noch benötigt</h3>
+              <div class="value" id="remaining-12">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Developed by</p>
+        <p>Karim Omar</p>
+      </div>
+    </div>
+
+    <script>
+      let jaCount = 0,
+        neinCount = 0,
+        verstRichtigCount = 0,
+        verstFalschCount = 0;
+      const jaInput = document.getElementById('ja-count');
+      const neinInput = document.getElementById('nein-count');
+      const verstRichtigInput = document.getElementById('verst-richtig');
+      const verstFalschInput = document.getElementById('verst-falsch');
+      const jaNeinInputs = document.getElementById('ja-nein-inputs');
+      const verstInputs = document.getElementById('verst-inputs');
+      const calculateBtn = document.getElementById('calculate-btn');
+      const results = document.getElementById('results');
+      let selectedType = '';
+
+      showInputs('ja-nein');
+
+      document
+        .getElementById('radio-ja')
+        .addEventListener('change', () => showInputs('ja-nein'));
+      document
+        .getElementById('radio-verst')
+        .addEventListener('change', () => showInputs('verstaendlichkeit'));
+
+      function showInputs(type) {
+        selectedType = type;
+        jaNeinInputs.classList.remove('show');
+        verstInputs.classList.remove('show');
+        if (type === 'ja-nein') jaNeinInputs.classList.add('show');
+        if (type === 'verstaendlichkeit') verstInputs.classList.add('show');
+      }
+
+      calculateBtn.addEventListener('click', () => {
+        if (selectedType === 'ja-nein') {
+          const ja = parseInt(jaInput.value) || 0;
+          const nein = parseInt(neinInput.value) || 0;
+          if (ja + nein === 0) {
+            alert(
+              'Bitte geben Sie mindestens einen Wert für Ja oder Nein ein.'
+            );
+            return;
+          }
+          jaCount = ja;
+          neinCount = nein;
+          verstRichtigCount = 0;
+          verstFalschCount = 0;
+        } else {
+          const r = parseInt(verstRichtigInput.value) || 0;
+          const f = parseInt(verstFalschInput.value) || 0;
+          if (r + f === 0) {
+            alert(
+              'Bitte geben Sie mindestens einen Wert für Richtig oder Falsch ein.'
+            );
+            return;
+          }
+          verstRichtigCount = r;
+          verstFalschCount = f;
+          jaCount = 0;
+          neinCount = 0;
+        }
+        displayResults();
+      });
+
+      function displayResults() {
+        results.classList.add('show');
+        
+        // Hide both result sections first
+        document.getElementById('ja-nein-results').style.display = 'none';
+        document.getElementById('verst-results').style.display = 'none';
+
+        // Show Ja/Nein results
+        if (jaCount + neinCount != 0) {
+          document.getElementById('ja-nein-results').style.display = 'block';
+          
+          const target9 = neinCount * 9;
+          const p9 = target9 > 0 ? Math.min(100, ((jaCount / target9) * 100)).toFixed(1) : 100;
+          const miss9 = target9 - jaCount;
+          const extra9 = jaCount - target9;
+
+          // Determine status class
+          const resultCard9 = document.querySelector('#ja-nein-results .result-card');
+          const targetBox9 = document.querySelector('#ja-nein-results .metric-box:nth-child(1)');
+          const remainingBox9 = document.querySelector('#ja-nein-results .metric-box:nth-child(2)');
+          
+          resultCard9.classList.remove('success', 'warning', 'danger');
+          targetBox9.classList.remove('success', 'warning', 'danger');
+          remainingBox9.classList.remove('success', 'warning', 'danger');
+          
+          if (p9 >= 100) {
+            resultCard9.classList.add('success');
+            targetBox9.classList.add('success');
+            remainingBox9.classList.add('success');
+          } else if (p9 >= 70) {
+            resultCard9.classList.add('warning');
+            targetBox9.classList.add('warning');
+            remainingBox9.classList.add('warning');
+          } else {
+            resultCard9.classList.add('danger');
+            targetBox9.classList.add('danger');
+            remainingBox9.classList.add('danger');
+          }
+
+          document.getElementById('percentage-9').textContent = p9 + '%';
+          
+          if (miss9 > 0) {
+            document.getElementById('missing-9').textContent = 
+              `Noch ${miss9} „Ja"-Anrufe benötigt`;
+            document.getElementById('remaining-9').textContent = miss9;
+          } else if (extra9 > 0) {
+            const coveredNein = Math.floor(extra9 / 9);
+            const remainder = extra9 % 9;
+            document.getElementById('missing-9').textContent = 
+              `✨ Ziel erreicht! +${extra9} Extra (${coveredNein} "Nein" gedeckt${remainder > 0 ? ` + ${remainder} Extra` : ''})`;
+            document.getElementById('remaining-9').textContent = '0 ✨';
+          } else {
+            document.getElementById('missing-9').textContent = '✨ Ziel erreicht!';
+            document.getElementById('remaining-9').textContent = '0 ✨';
+          }
+
+          document.getElementById('target-9').textContent = target9;
+        }
+
+        // Show Verständlichkeit results
+        if (verstRichtigCount + verstFalschCount != 0) {
+          document.getElementById('verst-results').style.display = 'block';
+          
+          const target12 = verstFalschCount * 12;
+          const p12 = target12 > 0 ? Math.min(100, ((verstRichtigCount / target12) * 100)).toFixed(1) : 100;
+          const miss12 = target12 - verstRichtigCount;
+          const extra12 = verstRichtigCount - target12;
+
+          // Determine status class
+          const resultCard12 = document.querySelector('#verst-results .result-card');
+          const targetBox12 = document.querySelector('#verst-results .metric-box:nth-child(1)');
+          const remainingBox12 = document.querySelector('#verst-results .metric-box:nth-child(2)');
+          
+          resultCard12.classList.remove('success', 'warning', 'danger');
+          targetBox12.classList.remove('success', 'warning', 'danger');
+          remainingBox12.classList.remove('success', 'warning', 'danger');
+          
+          if (p12 >= 100) {
+            resultCard12.classList.add('success');
+            targetBox12.classList.add('success');
+            remainingBox12.classList.add('success');
+          } else if (p12 >= 70) {
+            resultCard12.classList.add('warning');
+            targetBox12.classList.add('warning');
+            remainingBox12.classList.add('warning');
+          } else {
+            resultCard12.classList.add('danger');
+            targetBox12.classList.add('danger');
+            remainingBox12.classList.add('danger');
+          }
+
+          document.getElementById('percentage-12').textContent = p12 + '%';
+          
+          if (miss12 > 0) {
+            document.getElementById('missing-12').textContent = 
+              `Noch ${miss12} „Verständlichkeit"-Anrufe benötigt`;
+            document.getElementById('remaining-12').textContent = miss12;
+          } else if (extra12 > 0) {
+            const coveredFalsch = Math.floor(extra12 / 12);
+            const remainder = extra12 % 12;
+            document.getElementById('missing-12').textContent = 
+              `✨ Ziel erreicht! +${extra12} Extra (${coveredFalsch} "Falsch" gedeckt${remainder > 0 ? ` + ${remainder} Extra` : ''})`;
+            document.getElementById('remaining-12').textContent = '0 ✨';
+          } else {
+            document.getElementById('missing-12').textContent = '✨ Ziel erreicht!';
+            document.getElementById('remaining-12').textContent = '0 ✨';
+          }
+
+          document.getElementById('target-12').textContent = target12;
+        }
+      }
+    </script>
+  </body>
+</html>
